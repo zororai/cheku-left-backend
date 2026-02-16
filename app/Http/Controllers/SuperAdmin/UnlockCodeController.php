@@ -5,6 +5,7 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\ButcherShop;
 use App\Models\UnlockCode;
+use App\Services\SmsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -80,6 +81,17 @@ class UnlockCodeController extends Controller
             ]);
             
             $codes[] = $unlockCode;
+        }
+
+        // Send SMS notification if butcher shop is assigned
+        if ($validated['butcher_id']) {
+            $butcherShop = ButcherShop::find($validated['butcher_id']);
+            if ($butcherShop && $butcherShop->phone) {
+                $smsService = new SmsService();
+                $codesList = collect($codes)->pluck('code')->implode(', ');
+                $message = "Cheku Left: Your unlock code(s): {$codesList}. Each code adds {$validated['additional_payments']} payments to your license.";
+                $smsService->send($butcherShop->phone, $message);
+            }
         }
 
         return redirect()->route('super-admin.unlock-codes.index')

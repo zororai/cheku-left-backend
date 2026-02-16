@@ -9,9 +9,30 @@ use App\Models\SaleItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(name: 'Sales', description: 'Sales management endpoints')]
 class SaleController extends Controller
 {
+    #[OA\Get(
+        path: '/sales',
+        summary: 'List sales',
+        description: 'Get list of sales with optional filters',
+        tags: ['Sales'],
+        security: [['sanctum' => []]],
+        parameters: [
+            new OA\Parameter(name: 'butcher_id', in: 'query', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'date', in: 'query', required: false, schema: new OA\Schema(type: 'string', format: 'date')),
+            new OA\Parameter(name: 'from_date', in: 'query', required: false, schema: new OA\Schema(type: 'string', format: 'date')),
+            new OA\Parameter(name: 'to_date', in: 'query', required: false, schema: new OA\Schema(type: 'string', format: 'date')),
+            new OA\Parameter(name: 'user_id', in: 'query', required: false, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'payment_method', in: 'query', required: false, schema: new OA\Schema(type: 'string'))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'List of sales'),
+            new OA\Response(response: 401, description: 'Unauthenticated')
+        ]
+    )]
     public function index(Request $request): JsonResponse
     {
         $request->validate([
@@ -67,6 +88,31 @@ class SaleController extends Controller
         ]);
     }
 
+    #[OA\Post(
+        path: '/sales',
+        summary: 'Create a sale',
+        description: 'Record a new sale',
+        tags: ['Sales'],
+        security: [['sanctum' => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['device_sale_id', 'total_amount', 'payment_method', 'sale_date', 'items'],
+                properties: [
+                    new OA\Property(property: 'device_sale_id', type: 'string'),
+                    new OA\Property(property: 'sale_number', type: 'string'),
+                    new OA\Property(property: 'total_amount', type: 'number'),
+                    new OA\Property(property: 'payment_method', type: 'string'),
+                    new OA\Property(property: 'sale_date', type: 'string', format: 'date-time'),
+                    new OA\Property(property: 'items', type: 'array', items: new OA\Items(type: 'object'))
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Sale created'),
+            new OA\Response(response: 401, description: 'Unauthenticated')
+        ]
+    )]
     public function store(Request $request): JsonResponse
     {
         $request->validate([

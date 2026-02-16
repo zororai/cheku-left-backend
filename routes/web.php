@@ -18,6 +18,11 @@ Route::get('/', function () {
     return redirect()->route('login');
 })->name('home');
 
+// Handle GET requests to /logout (redirect to home)
+Route::get('logout', function () {
+    return redirect('/');
+});
+
 Route::get('dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
