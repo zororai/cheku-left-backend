@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Owner;
 
 use App\Http\Controllers\Controller;
 use App\Models\Sale;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -69,6 +71,37 @@ class SalesController extends Controller
             'cashiers' => $cashiers,
             'filters' => $request->only(['date_from', 'date_to', 'cashier_id']),
         ]);
+    }
+
+    public function print(Request $request, Sale $sale): \Illuminate\Contracts\View\View
+    {
+        $user = $request->user();
+        $butcherShop = $user->butcherShop ?? $user->ownedShop;
+
+        if (!$butcherShop || $sale->butcher_id !== $butcherShop->id) {
+            abort(403);
+        }
+
+        $sale->load(['user:id,name', 'butcherShop:id,name', 'items.product:id,name']);
+
+        return view('owner.sales.receipt', compact('sale'));
+    }
+
+    public function pdf(Request $request, Sale $sale): HttpResponse
+    {
+        $user = $request->user();
+        $butcherShop = $user->butcherShop ?? $user->ownedShop;
+
+        if (!$butcherShop || $sale->butcher_id !== $butcherShop->id) {
+            abort(403);
+        }
+
+        $sale->load(['user:id,name', 'butcherShop:id,name', 'items.product:id,name']);
+
+        $pdf = Pdf::loadView('owner.sales.receipt', compact('sale'))
+            ->setPaper([0, 0, 226.77, 700], 'portrait'); // ~80mm wide
+
+        return $pdf->download("receipt-{$sale->sale_number}.pdf");
     }
 
     public function show(Request $request, Sale $sale): Response

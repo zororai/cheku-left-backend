@@ -42,6 +42,8 @@ Route::middleware(['auth', 'verified', 'role:owner,manager'])->prefix('owner')->
         ->name('staff.toggle-status');
     Route::get('sales', [SalesController::class, 'index'])->name('sales.index');
     Route::get('sales/{sale}', [SalesController::class, 'show'])->name('sales.show');
+    Route::get('sales/{sale}/print', [SalesController::class, 'print'])->name('sales.print');
+    Route::get('sales/{sale}/receipt.pdf', [SalesController::class, 'pdf'])->name('sales.pdf');
     Route::get('stock-sessions', [StockSessionController::class, 'index'])->name('stock-sessions.index');
     Route::get('stock-sessions/{stockSession}', [StockSessionController::class, 'show'])->name('stock-sessions.show');
     Route::get('license', [LicenseController::class, 'index'])->name('license.index');
