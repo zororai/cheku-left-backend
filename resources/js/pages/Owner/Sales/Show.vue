@@ -58,9 +58,17 @@ const formatDate = (date: string) => {
                     <h1 class="text-2xl font-bold">Sale {{ sale.sale_number }}</h1>
                     <p class="text-muted-foreground">{{ formatDate(sale.sale_date) }}</p>
                 </div>
-                <Link href="/owner/sales">
-                    <Button variant="outline">Back to Sales</Button>
-                </Link>
+                <div class="flex gap-2">
+                    <a :href="`/owner/sales/${sale.id}/print`" target="_blank">
+                        <Button variant="outline">Print Receipt</Button>
+                    </a>
+                    <a :href="`/owner/sales/${sale.id}/receipt.pdf`">
+                        <Button variant="outline">Download PDF</Button>
+                    </a>
+                    <Link href="/owner/sales">
+                        <Button variant="outline">Back to Sales</Button>
+                    </Link>
+                </div>
             </div>
 
             <div class="grid gap-6 md:grid-cols-3">
